@@ -238,6 +238,7 @@ body {
     margin-bottom: var(--space-lg);
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-xs);
 }
 
@@ -267,7 +268,8 @@ body {
     color: var(--text-secondary);
     font-size: var(--font-size-lg);
     max-width: 500px;
-    margin-bottom: var(--space-xl);
+    margin: 0 auto var(--space-xl);
+    text-align: center;
 }
 
 .hero-buttons {
