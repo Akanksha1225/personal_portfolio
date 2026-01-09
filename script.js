@@ -1,6 +1,9 @@
-// Portfolio JavaScript - Navigation & Interactions
+// Portfolio JavaScript - Navigation, Animations & Contact Form
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Lucide icons
+    lucide.createIcons();
+
     // Mobile Navigation Toggle
     const navToggle = document.querySelector('.nav-toggle');
     const navMenu = document.querySelector('.nav-menu');
@@ -102,6 +105,96 @@ document.addEventListener('DOMContentLoaded', () => {
         el.classList.add('reveal-element');
         observer.observe(el);
     });
+
+    // Contact Form - Discord Webhook Integration
+    const contactForm = document.getElementById('contactForm');
+    const formStatus = document.getElementById('formStatus');
+    const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1459270842826494118/IPDkW_frdyGEExScM_HUdxXPT7-evV4RyBO0DzJeclYPme0P4rnws_mcEHa59yaSCf8-';
+
+    contactForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const submitBtn = contactForm.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<svg class="icon animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="30 70"/></svg> Sending...';
+
+        // Get form data
+        const formData = new FormData(contactForm);
+        const name = formData.get('name');
+        const email = formData.get('email');
+        const subject = formData.get('subject');
+        const message = formData.get('message');
+
+        // Create Discord embed
+        const discordPayload = {
+            embeds: [{
+                title: '📬 New Portfolio Contact',
+                color: 0x6366f1, // Purple color
+                fields: [
+                    {
+                        name: '👤 Name',
+                        value: name,
+                        inline: true
+                    },
+                    {
+                        name: '📧 Email',
+                        value: email,
+                        inline: true
+                    },
+                    {
+                        name: '📋 Subject',
+                        value: subject,
+                        inline: false
+                    },
+                    {
+                        name: '💬 Message',
+                        value: message,
+                        inline: false
+                    }
+                ],
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: 'Portfolio Contact Form'
+                }
+            }]
+        };
+
+        try {
+            const response = await fetch(DISCORD_WEBHOOK, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(discordPayload)
+            });
+
+            if (response.ok) {
+                formStatus.textContent = '✅ Message sent successfully! I\'ll get back to you soon.';
+                formStatus.className = 'form-status success';
+                contactForm.reset();
+            } else {
+                throw new Error('Failed to send message');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            formStatus.textContent = '❌ Failed to send message. Please try again or email directly.';
+            formStatus.className = 'form-status error';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+
+            // Re-initialize icon after restoring button text
+            lucide.createIcons();
+
+            // Hide status after 5 seconds
+            setTimeout(() => {
+                formStatus.className = 'form-status';
+            }, 5000);
+        }
+    });
 });
 
 // Add reveal animation styles dynamically
@@ -128,6 +221,15 @@ style.textContent = `
     
     .nav-link.active::after {
         width: 100%;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .animate-spin {
+        animation: spin 1s linear infinite;
     }
 `;
 document.head.appendChild(style);
